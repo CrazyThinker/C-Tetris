@@ -61,10 +61,74 @@ int Opening(void)
 
 void Help(void)
 {
+	clrscr();
+	printf("테트리스 게임입니다!\n");
+	printf("블록을 이리저리 돌리고 맞춰 한줄을 채우면 자동으로 라인이 클리어됩니다.\n");
+	printf("상황에 맞지않는 블록이 나올 경우, 블록을 저장하거나 저장한 블록을 다시 불러올수도 있습니다.\n");
+	getchar();
 }
 
 void Setting(void)
 {
+}
+
+int SetGameMode(void)
+{
+	int Cursor = 1;
+	CCharacter cCursor("▶", CRGBA(255, 0, 0), CRGBA(242, 242, 242));
+	CKeyboard Key;
+
+	while (1)
+	{
+		settextcolor("0F");
+		clrscr();
+
+		printf("\n\n");
+		printf("           - Select Mode -      \n\n\n");
+
+		if (Cursor == 1) settextcolor("CF");
+		else settextcolor("4F");
+		printf("      ■■■■■■■■■■■■■\n");
+		printf("      ■                      ■\n");
+		if (Cursor == 1) printf("      ■  ▶  Single Mode     ■\n");
+		else printf("      ■      Single Mode     ■\n");
+		printf("      ■                      ■\n");
+		printf("      ■■■■■■■■■■■■■\n");
+		printf("\n\n");
+
+		if (Cursor == 2) settextcolor("9F");
+		else settextcolor("1F");
+		printf("      ■■■■■■■■■■■■■\n");
+		printf("      ■                      ■\n");
+		if (Cursor == 2) printf("      ■  ▶  Multi Mode      ■\n");
+		else printf("      ■      Multi Mode      ■\n");
+		printf("      ■                      ■\n");
+		printf("      ■■■■■■■■■■■■■\n");
+
+		settextcolor("0F");
+
+		Key.GetKey();
+
+		if (Key == KB_EXITGAME) return 1;
+		else if (Key == KB_RETURN) break;
+		else if (Key == KB_ARROW_UP)
+		{
+			if (Cursor == 1) continue;
+			gotoxy(0, Cursor);
+			printf("  ");
+			Cursor--;
+		}
+		else if (Key == KB_ARROW_DOWN)
+		{
+			if (Cursor == 2) continue;
+			gotoxy(0, Cursor);
+			printf("  ");
+			Cursor++;
+		}
+	}
+
+	nUser = Cursor;
+	return 0;
 }
 
 int Initialize(void)
@@ -117,11 +181,10 @@ void SampleUser(void)
 	User[2].UserKeyboard = UserKey2;
 }
 
-void Game(void)
+int Game(void)
 {
 	int i, j, Line;
 
-	clrscr();
 	SampleUser();
 	Screen[1].MapSize = CPoint(24, 20);
 	Screen[2].MapSize = CPoint(24, 20);
@@ -130,9 +193,14 @@ void Game(void)
 
 	User[1].NewBlock();
 	User[2].NewBlock();
+
+	if (SetGameMode() == 1) return 1;
+
+	clrscr();
+
 	while (1)
 	{
-		if (GetAsyncKeyState(27) == -32767) return;
+		if (GetAsyncKeyState(27) == -32767) break;
 
 		for (i = 1; i <= nUser; i++)
 		{
@@ -181,6 +249,8 @@ void Game(void)
 			}
 		}
 	}
+
+	return 0;
 }
 
 int main(void)
@@ -198,7 +268,10 @@ int main(void)
 	{
 		clrscr();
 		Result = Opening();
-		if (Result == 1) { Game(); return 0; }
+		if (Result == 1)
+		{
+			if(Game()==0) return 0;
+		}
 		else if (Result == 2) Help();
 		else if (Result == 3) Setting();
 		else break;
